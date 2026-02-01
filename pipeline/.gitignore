@@ -1,0 +1,7 @@
+*.json
+*.jsonl
+*.parquet
+__pycache__
+*.egg-info/
+*.ipynb
+.env
