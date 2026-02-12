@@ -603,7 +603,7 @@ class BatchMonitor:
             self.check_status_display(job, batches, datetime.now()),
             refresh_per_second=10,
         ) as live:
-            monitor_task = asyncio.create_task(self._check_status_monitor(job.id, live))
+            monitor_task = asyncio.create_task(self._check_status_monitor(live))
             exit_task = asyncio.create_task(asyncio.to_thread(input))
 
             await asyncio.wait(
@@ -611,7 +611,7 @@ class BatchMonitor:
             )
             monitor_task.cancel()
 
-    async def _check_status_monitor(self, job_id: int, live: Live) -> None:
+    async def _check_status_monitor(self, live: Live) -> None:
         while True:
             await asyncio.sleep(60)
             job, upd_batches = await asyncio.to_thread(
