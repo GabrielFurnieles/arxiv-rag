@@ -4,22 +4,11 @@ from pathlib import Path
 import numpy as np
 import logging
 import asyncio
-import json
-import mmap
-import os
-import re
 
 from openai.types import Batch
 from openai import OpenAI
 
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TaskProgressColumn,
-    TimeRemainingColumn,
-)
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.console import Console
 from rich.logging import RichHandler
 
@@ -49,9 +38,7 @@ class EmbeddingConfig:
     max_input_tokens: int = (
         200_000  # Max input tokens across all inputs in a single request. According to OpenAI docs is 300_000 but OpenAI counts different than tiktoken
     )
-    max_requests_per_batch: int = (
-        50_000  # According to OpenAI batch inference API docs
-    )
+    max_requests_per_batch: int = 50_000  # According to OpenAI batch inference API docs
     max_batch_file_size: int = 200 * 1024 * 1024  # 200MB
     output_path: str = "./data/embeddings"
 
@@ -98,7 +85,9 @@ class VectorEmbeddings:
 
         return job.id
 
-    def check_status(self, job_id: int, refresh: bool = False) -> None:
+    def check_status(
+        self, job_id: int, display: bool = True, refresh: bool = False
+    ) -> JobStatus:
         """
         Displays a Table in the console with relevant info about all the
         batches linked to a job_id
@@ -116,14 +105,16 @@ class VectorEmbeddings:
             logger.warning("Skipping Job monitoring")
             return
 
-        if not refresh:
-            console.print(monitor.check_status_display(job, batches))
-            return
+        if display:
+            if refresh:
+                try:
+                    asyncio.run(monitor.check_status_async(job, batches))
+                except KeyboardInterrupt:
+                    pass
+            else:
+                console.print(monitor.check_status_display(job, batches))
 
-        try:
-            asyncio.run(monitor.check_status_async(job, batches))
-        except KeyboardInterrupt:
-            pass
+        return job.status
 
     def get_embeddings(self, job_id: int) -> str | None:
         """

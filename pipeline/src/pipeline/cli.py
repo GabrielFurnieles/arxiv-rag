@@ -1,7 +1,7 @@
 import typer
 from rich import print
 from decouple import config
-from .etl import KaggleDatasetExtractor, ArxivDatasetTransformer
+from .etl import KaggleDatasetExtractor, ArxivDatasetTransformer, QdrantLoader
 from .embeddings import VectorEmbeddings
 from .db.crud import DBRepository
 from .db.database import engine
@@ -68,6 +68,26 @@ def get_embeddings(job_id: int):
     Embeddings = VectorEmbeddings()
     embs_file = Embeddings.get_embeddings(job_id)
     print(f"\n[bold]✨ Embeddings for job {job_id} downloaded at {embs_file}!")
+
+
+@app.command()
+def create_qdrant_collection(
+    name: str = "arxiv-rag", emb_dim: int = 4096, recreate: bool = False
+):
+    """🚀 Create a Qdrant Collection"""
+    qdrant = QdrantLoader()
+    qdrant.create_collection(name, emb_dim, recreate)
+    print(f"\n🚀 Successfully created '{name}' collection!")
+
+
+@app.command()
+def upload_embeddings(
+    job_id: int, collection: str = "arxiv-rag", recreate: bool = False
+):
+    """🎈 Upload embeddings to a Qdrant collection"""
+    qdrant = QdrantLoader()
+    qdrant.load_vectors(job_id, collection, recreate=recreate)
+    print(f"\n🎈 All embeddings from Job {job_id} successfully uploaded!")
 
 
 if __name__ == "__main__":

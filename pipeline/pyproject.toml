@@ -12,6 +12,7 @@ dependencies = [
     "polars>=1.37.1",
     "pydantic>=2.12.5",
     "python-decouple>=3.8",
+    "qdrant-client[fastembed]>=1.16.2",
     "requests>=2.32.5",
     "sqlalchemy>=2.0.46",
     "tenacity>=9.1.2",

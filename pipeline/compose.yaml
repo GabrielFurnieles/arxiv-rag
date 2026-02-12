@@ -1,0 +1,26 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: always
+    container_name: qdrant
+    ports:
+      - 6333:6333
+      - 6334:6334
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+    environment:
+     - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - qdrant-network
+
+networks:
+  qdrant-network:
+    driver: bridge
+
+volumes:
+  qdrant_data:
